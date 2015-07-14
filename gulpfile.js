@@ -6,28 +6,25 @@ var argv = require('yargs').argv;
 var watch, server, config;
 
 
-gulp.task('server', function(){
-	server = server || gls.new(['--harmony', 'index.js'], null, false);
-	var restart_files = ['./app/**/*.js', './index.js'];
+gulp.task('server', function() {
+	var restart_files = ['./controllers/**/*.js', './app.js'];
 
-	server.start();
+	let debug = require('debug')('express-starter');
+	let app = require('./app');
 
-	if( argv.autorestart )
-	{
-		watch = watch || require('gulp-watch');
-		
-		gulp.src(restart_files)
-			.pipe(watch(restart_files, {ignoreInitial: true}, function(){
-			console.log('restarting server');
-			server.start.bind(server)();
-		}));
-	}
+	app.set('port', process.env.PORT || 3000);
+
+	let server = app.listen(app.get('port'), function() {
+		debug('Express server listening on port ' + server.address().port);
+	});
+	
 });
 
 gulp.task('pre-commit', function(){
 	var guppy = require('git-guppy')(gulp);
 	var gulpFilter = require('gulp-filter');
 	var jshint = require('gulp-jshint');
+
 	config = config || require('./package');
 	
 	return gulp.src(guppy.src('pre-commit'))

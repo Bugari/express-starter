@@ -31,5 +31,8 @@
     "globals": {
       "console": true
     }
+  },
+  "devDependencies": {
+    "yargs": "^3.15.0"
   }
 }
