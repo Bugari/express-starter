@@ -1,35 +1,37 @@
 "use strict";
 /* jshint node: true */
-var gulp = require('gulp');
-var gls = require('gulp-live-server');
-var argv = require('yargs').argv;
-var watch, server, config;
+let gulp = require('gulp');
+let nodemon = require('gulp-nodemon');
+//let argv = require('yargs').argv;
+let config = require('./package');
+let jshint = require('gulp-jshint');
 
 
 gulp.task('server', function() {
-	var restart_files = ['./controllers/**/*.js', './app.js'];
+    nodemon({ script: 'app.js',
+            ext: 'html js css',
+            tasks: ['lint'],
+            env: {'DEBUG': 'server'}
 
-	let debug = require('debug')('express-starter');
-	let app = require('./app');
+    })
+    .on('restart', function () {
+        console.log('server restarted!');
+    });
+});
 
-	app.set('port', process.env.PORT || 3000);
-
-	let server = app.listen(app.get('port'), function() {
-		debug('Express server listening on port ' + server.address().port);
-	});
-	
+gulp.task('lint', function() {
+    return gulp.src(['./controllers/*.js'])
+       .pipe(jshint(config.jshintConfig))
+       .pipe(jshint.reporter('jshint-stylish'));
 });
 
 gulp.task('pre-commit', function(){
-	var guppy = require('git-guppy')(gulp);
-	var gulpFilter = require('gulp-filter');
-	var jshint = require('gulp-jshint');
+    let guppy = require('git-guppy')(gulp);
+    let gulpFilter = require('gulp-filter');
 
-	config = config || require('./package');
-	
-	return gulp.src(guppy.src('pre-commit'))
-		.pipe(gulpFilter(['*.js']))
-		.pipe(jshint(config.jshintConfig))
-		.pipe(jshint.reporter('jshint-stylish'))
-		.pipe(jshint.reporter('fail'));
+    return gulp.src(guppy.src('pre-commit'))
+    .pipe(gulpFilter(['*.js']))
+    .pipe(jshint(config.jshintConfig))
+    .pipe(jshint.reporter('jshint-stylish'))
+    .pipe(jshint.reporter('fail'));
 });
